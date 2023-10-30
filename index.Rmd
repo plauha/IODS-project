@@ -1,5 +1,6 @@
 ---
 title: "IODS course project"
+author: "Patrik Lauha"
 output:
   html_document:
     theme: cosmo
