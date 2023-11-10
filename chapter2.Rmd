@@ -1,13 +1,43 @@
-# Insert chapter 2 title here
+# Chapter 2
 
-*Describe the work you have done this week and summarize your learning.*
-
-- Describe your work and results clearly. 
-- Assume the reader has an introductory course level understanding of writing and reading R code as well as statistical methods.
-- Assume the reader has no previous knowledge of your data or the more advanced methods you are using.
+This week I got to remind myself about fitting linear models and interpreting their results in R as well as preprocessing the data before the analysis. The analysis and the results are presented below.
 
 ```{r}
-date()
+library(tidyverse)
+data = read_csv('data/learning2014.csv')
+str(data)
+head(data)
+```
+The data contains information of 166 students of an university course. The data contains background information of students age and gender. Variables Attitude, Deep, Stra and Surf are averaged over several variables and describe the students overall attitude towards statistics, deep approach, strategic approach and surface approach for studying on a scale from 1 to 5. Variable Points contains the number of points student received in exam.
+
+```{r}
+library(psych)
+pairs.panels(data, method = "pearson", density = TRUE)
+table(data$gender)
+mean(data$Age)
+```
+There were twice more women than men on the course. The average age of participants is 25.5 years and the age distribution is positively skewed as expected. Other variables seem to be roughly normally distributed. There are mostly no strong correlations between variables. The overall attitude towards statistics correlates positively with the exam points (r=0.44) and deep and surface study approaches correlate negatively (r=-0.32).
+
+
+```{r}
+model = lm(Points ~Attitude + Stra + Surf, data=data)
+summary(model)
 ```
 
-Here we go again...
+I chose Attitude, Strategic approach and Surface approach as explanatory variables to model the exam performance (=Points). Attitude seems to be the only statistically significant variable. Higher values of attitude indicate higher points in the exam. Strategic approach seems to have a positive effect and Surface approach a negative effect, but these explanatory variables are not statistically significant.
+
+```{r}
+model2 = lm(Points ~Attitude + Stra, data=data)
+summary(model2)
+
+model3 = lm(Points ~Attitude, data=data)
+summary(model3)
+```
+The model gets better, when Surface approach is removed from the explanatory variables. Strategic approach is almost statistically significant variable but still worth to include in the model, since adjusted R-squared is higher with it than without it. My final model is thus model2. Based on results of this model, both Attitude and Strategic approach have a positive effect on exam points. The dependency is stronger for Attitude. On average increase of one unit in Attitude increases exam result by 3.5 points and increase of one unit in Strategic approach increases exam result by 0.9 points (if other factors remain unchanged). The R^2 value of the model is 0.20, which means that Attitude and Strategic approach explain 20% of the variation of exam results. So the majority of the exam performance is still explained by some other factors than only the students' attitude towards statistics and use of strategic approach.
+
+```{r}
+library(ggfortify)
+autoplot(model2)
+```
+
+In linear model the residuals should be randomly and roughly normally distributed around the prediction (i.e. there should not be any kind of dependence structure in the residuals). The Residuals vs Fitted plot shows that this indeed is the case. No dependence structure is evident and the residuals don't seem to depend on fitted values. There are no major outliers. Normal Q-Q plot can be used to more carefully assess the normality assumption of the residuals. In ideal case the residuals should follow the diagonal dashed line. In this case this is not perfectly true, but still good enough so the normality assumption of residuals is not violated. Residuals vs Leverage plot can be used to assess the stability of the model. If removing a single observation would change the model coefficients significantly, (i.e. the data point would fall outside of the Cook's distance in the residuals vs leverage plot), the results of the model would not be very reliable. In this model this is not the case and also residuals vs leverage plot seems to be in order.

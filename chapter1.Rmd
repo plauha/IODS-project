@@ -1,8 +1,6 @@
 
 # About the project
 
-*Write a short description about the course and add a link to your GitHub repository here. This is an R Markdown (.Rmd) file so you should use R Markdown syntax.*
-
 At the beginning of the course I am feeling a little bit tired, since I am currently a little bit busy with other projects. I have used R and RStudio before and should be mostly familiar with them, but this course works as a good reminder for me. I found this course from the list of possible courses to include in my doctoral studies.
 
 The R for Health Data Science book seems very clear and well-organized and I believe that it offers a good way to learn R also for people who are not familiar with R before. I have not used tibbles or piping before in R, so it was nice to learn about them. 
@@ -16,7 +14,6 @@ The R for Health Data Science book seems very clear and well-organized and I bel
 1+1 
 
 date()
-
 ```
-The text continues here.
+
 
