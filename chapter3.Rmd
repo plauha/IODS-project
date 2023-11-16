@@ -1,0 +1,66 @@
+# Chapter 3
+
+The analysis and results of week 3 are presented below.
+
+```{r}
+library(tidyverse)
+data = read_csv('data/student_all.csv', show_col_types = FALSE)
+colnames(data)
+```
+The data contains information of 370 students who have participated on a mathematics course and a portuguese course. 27 first variables contain background information of the students. Variable 'failure' contains the number of past class failures, 'absence' the number of absences, 'paid' if extra classes have been paid for the course and G1-G3 the grades for first and second period and in total, for Mathematics (x) and Portuguese (y) respectively. Variable 'alc_use' describes the alcohol consumption (1= very low, 5= very high) and 'high_use' indicates if alc_use > 2. 
+
+I study the relationship between high alcohol consumption and final grades and absences on both courses (G3.x, absences.x, G3.y, absences.y). I assume that high alcohol consumption might correlate with lower grades and greater number of absences.
+
+```{r}
+boxplot(G3.x ~ high_use, data=data, main = "Math grade")
+boxplot(absences.x ~ high_use, data=data, main = "Math absences")
+boxplot(G3.y ~ high_use, data=data, main = "Portuguese grade")
+boxplot(absences.y ~ high_use, data=data, main = "Portuguese absences")
+
+aggregate(data[, c('G3.x', 'absences.x', 'G3.y', 'absences.y')], list(data$high_use), mean)
+```
+
+Based on the exploration, the initial hypothesis seems to be true. Grades for low_use group are slightly higher on both courses (10.6 vs 10.1 and 13.0 vs 11.5) and absences are lower (4.3 vs 7.8 and 3.1 vs 4.9).
+
+I fit a logistic regression model to study the dependence between high alcohol usage and aforementioned four variables describing school performance. (Note that even though high alcohol usage is here used as a target variable and the school performance as explanatory variables, the model does not state anything about causality and in real world the possible causality between the variables might probably go the other way around!)
+
+```{r}
+model <- glm(high_use ~ G3.x+absences.x+G3.y+absences.y, data = data, family = binomial)
+summary(model)
+
+# Odds ratios and their confidence intervals:
+exp(cbind(OR = coef(model), confint(model)))
+```
+In my model Portuguese course grade and Math course absences are the only statistically significant explanatory variables. The odds ratio can be interpreted as the change in the odds of high alcohol usage for an increase of one unit in the explanatory variable. For example, OR 1.047 for absences.x means, that along with each absence from the Math course, the odds of high alcohol usage increase by a factor of 1.047. Odds greater than one mean increasing probability of high alcohol usage while odds smaller than one mean decreasing probability of high alcohol usage. Higher grade on Portuguese course decreases the odds of high alcohol usage by a factor of 0.82 per grade. For other variables (math course score and portuguese course absences) the confidence interval crosses 1, which means that we can't really be sure if the effect is positive or negative (ie. there might be no effect at all). 
+
+Contradictory to the hypothesis and initial results, higher scores on math course seem to even indicate slightly higher probability of high alcohol usage. This is probably due to having too many explanatory variables, which are likely to have some amount of multicollinearity. It is very likely that there is correlation between absences and grade of a course, which slightly violates the independence assumption of a logistic regression model. It might be wise to remove some explanatory variables and try a simpler model. 
+
+```{r}
+model2 <- glm(high_use ~ absences.x+G3.y, data = data, family = binomial)
+summary(model2)
+
+# Odds ratios and their confidence intervals:
+exp(cbind(OR = coef(model2), confint(model2)))
+```
+
+Now the model seems to be a little bit better. Let's next predict for the data:
+
+```{r}
+prob_pred = model2 %>% predict(data, type = "response")
+pred = prob_pred > 0.5
+plot(prob_pred, data$high_use)
+table(pred, data$high_use)
+```
+Ideally the true cases (high users) on the top of the plot should be located more on the right than the false cases (low users). My model does not seem to perform very well in predicting alcohol usage based on school performance.
+The table shows the predicted negatives versus positives. Prediction is shown on rows and true condition on columns. 250 out of 259 low users are correctly classifies as low users, but only 17 of 111 high users are classified as high users. 
+
+```{r}
+mean(pred==data$high_use)
+mean(data$high_use == FALSE)
+```
+The prediction from my model is correct in 72% of the cases. Purely by guessing the most common value (high_use = FALSE) for each student we get to accuracy of 70% so the model does not seem to be very useful :'(
+
+The Bonus exercises sound interesting but unfortunately I didn't have time to complete them.. :(
+
+
+
