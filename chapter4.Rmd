@@ -24,11 +24,11 @@ for(i in 1:14){
   Boston[,i] = (Boston[,i]-mean(Boston[,i]))/(sd(Boston[,i]))
 }
 summary(Boston)
-# Categorize crime variable
+# Categorize crime variable 
 Boston$crime <- cut(Boston$crim, breaks=quantile(Boston$crim)+ c(-0.1, 0, 0, 0, 0.1), labels=c("1st","2nd","3rd", "4th"))
 Boston = subset(Boston, select = -c(crim))
 # Train and test split
-set.seed(68)
+set.seed(68) 
 idxs = sample(1:506)
 train_idxs = idxs[1:floor(0.8*nrow(Boston))]
 test_idxs = idxs[ceiling(0.8*nrow(Boston)):nrow(Boston)]
@@ -63,7 +63,7 @@ data(Boston)
 for(i in 1:14){
   Boston[,i] = (Boston[,i]-mean(Boston[,i]))/(sd(Boston[,i]))
 }
-# run clustering algorithm for 1-10 clusters and save the total sum of squares within cluster
+# run clustering algorithm for 1-20 clusters and save the total sum of squares within cluster
 ss = c()
 for(k in 1:20){
   km = kmeans(Boston, centers = k, nstart = 25)
@@ -76,7 +76,9 @@ plot(1:20, ss, main ="", ylab="Total Within Sum of Square", xlab="Number of clus
 The smaller the sum of squares within the clusters indicates that the observations within the cluster are closer to each other and thus that the clustering is better. However, the TWSS will always get lower, when the number of clusters is increased but it is not reasonable to assign every single observation in its own cluster. We are thus looking for a point in the plot where the slope starts to get even. In this case it could be just two clusters, since after that every new cluster that we introduce decreases the TWSS but not very notably. Also the results from the lda would support two clusters. Let's fit a new model with k=2 clusters and visualize the results.
 
 ```{r}
+# fit new model
 k2 = kmeans(Boston, centers = 2, nstart = 25)
+# visualize clusters
 pairs(Boston, col=k2$cluster)
 ```
 
