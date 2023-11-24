@@ -1,0 +1,85 @@
+# Chapter 4
+
+The analysis and results of week 4 are presented below.
+
+```{r}
+library(MASS)
+data(Boston)
+#View(Boston)
+```
+The data set contains information of 506 areas in Boston including the median value of houses and 13 other variables, such as the crime rate, amount of air pollution, distance to employment centres and pupil-to-teacher ratio.
+
+
+```{r}
+summary(Boston)
+cor(Boston)
+for(i in 1:14){
+  hist(Boston[,i], main=colnames(Boston)[i])
+}
+```
+
+Unsurprisingly, many of the variables describing the areas have strong correlations with each other. For example the amount of air pollution (nox) and the amount of industry (indus) have a strong positive correlation with each other and strong negative correlation with the distance to employment centres (dis). Property tax rate has a strong positive correlation with accessibility to radial highways. Median value of homes has again unsurprisingly a negative correlation with many variables such as crime rate, amount of industry, proportion of old buildings, tax rate and pupil-to-teacher ratio and a positive correlation with average number of rooms per dwelling.  Many variables such as accessibility to radial highways (rad), property tax rate per $10,000 (tax) and amount of industry (indus) seem to have a high number of extreme values and distributions are very uneven. 
+```{r}
+for(i in 1:14){
+  Boston[,i] = (Boston[,i]-mean(Boston[,i]))/(sd(Boston[,i]))
+}
+summary(Boston)
+# Categorize crime variable
+Boston$crime <- cut(Boston$crim, breaks=quantile(Boston$crim)+ c(-0.1, 0, 0, 0, 0.1), labels=c("1st","2nd","3rd", "4th"))
+Boston = subset(Boston, select = -c(crim))
+# Train and test split
+idxs = sample(1:506)
+train_idxs = idxs[1:floor(0.8*nrow(Boston))]
+test_idxs = idxs[ceiling(0.8*nrow(Boston)):nrow(Boston)]
+Boston_train = Boston[train_idxs,]
+Boston_test = Boston[test_idxs,]
+```
+
+The data set is standardized so that each variable has zero mean and unit variance, which makes the values of different variables more comparable with each other. (Standardizing might also mean that all values are scaled between 0 and 1 but I hope that this is what was asked for..). 
+
+```{r}
+library(ggordiplots)
+model <- lda(crime~., Boston_train)
+model
+gg_ordiplot(model, Boston_train$crime)
+```
+
+Seems that in the training data the model can separate the highest category from three lower ones, which get more mixed with each other.
+
+```{r}
+test_labels = Boston_test$crime
+Boston_test = subset(Boston_test, select = -c(crime))
+pred = predict(model, Boston_test)$class
+table(Predicted = pred, Actual = test_labels)
+```
+
+The test results seem to follow the results of the biplot from training data. The hihgest category (4) is mostly correctly classified, except that two instances from class 3 are incorrectly classified to class 4. Classes 3 and 1 get a little bit more mixed with class 1, and even half of all observations belonging to class 1 are incorrectly classified as class 2. However, the results seem fairly good given that the categorization boundaries were quite arbitrary (the distribution of original response variable crime may not support the categorization into four even categories). The model seems to handle the order of the categories pretty well, since no observation is classified more than one class away from the correct one.
+
+I am a little bit confused what following problem statement means since I think this is what we exactly did in part 4: "Reload the Boston dataset and standardize the dataset (we did not do this in the Exercise Set, but you should scale the variables to get comparable distances)." However, here we go:
+
+```{r}
+data(Boston)
+for(i in 1:14){
+  Boston[,i] = (Boston[,i]-mean(Boston[,i]))/(sd(Boston[,i]))
+}
+# run clustering algorithm for 1-10 clusters and save the total sum of squares within cluster
+ss = c()
+for(k in 1:20){
+  km = kmeans(Boston, centers = k, nstart = 25)
+  ss = c(ss, km$tot.withinss)
+}
+
+plot(1:20, ss, main ="", ylab="Total Within Sum of Square", xlab="Number of clusters")
+```
+
+The smaller the sum of squares within the clusters indicates that the observations within the cluster are closer to each other and thus that the clustering is better. However, the TWSS will always get lower, when the number of clusters is increased but it is not reasonable to assign every single observation in its own cluster. We are thus looking for a point in the plot where the slope starts to get even. In this case it could be just two clusters, since after that every new cluster that we introduce decreases the TWSS but not very notably. Also the results from the lda would support two clusters. Let's fit a new model with k=2 clusters and visualize the results.
+
+```{r}
+k2 = kmeans(Boston, centers = 2, nstart = 25)
+pairs(Boston, col=k2$cluster)
+```
+
+It seems (when we zoom in to the picture) that our two clusters are very well separable and can be even interpreted as "good" and "bad" areas. The clusters clearly differ from each other in terms of crime rate, amount of industry, air pollution, taxation and closeness to highways.
+
+Again, I unfortunately didn't have time for Bonus exercises.. :'(
+

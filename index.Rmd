@@ -32,5 +32,10 @@ output:
 
 ***
 
-(to be continued...)
+```{r child = "chapter4.Rmd"}
+```
+
+***
+
+(to be continued next week...)
 
