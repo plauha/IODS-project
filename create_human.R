@@ -1,6 +1,6 @@
 # Patrik Lauha
 # 24.11.2023
-# A script for preprocessing data of Human Development Index (HDI)
+# A script for preprocessing data of Human Development Index (HDI).
 
 library(readr)
 hd <- read_csv("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/human_development.csv")

@@ -1,6 +1,6 @@
 # Chapter 4
 
-The analysis and results of week 4 are presented below.
+The analysis and results of week 4 are presented below. 
 
 ```{r}
 library(MASS)
