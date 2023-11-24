@@ -28,6 +28,7 @@ summary(Boston)
 Boston$crime <- cut(Boston$crim, breaks=quantile(Boston$crim)+ c(-0.1, 0, 0, 0, 0.1), labels=c("1st","2nd","3rd", "4th"))
 Boston = subset(Boston, select = -c(crim))
 # Train and test split
+set.seed(68)
 idxs = sample(1:506)
 train_idxs = idxs[1:floor(0.8*nrow(Boston))]
 test_idxs = idxs[ceiling(0.8*nrow(Boston)):nrow(Boston)]
@@ -53,7 +54,7 @@ pred = predict(model, Boston_test)$class
 table(Predicted = pred, Actual = test_labels)
 ```
 
-The test results seem to follow the results of the biplot from training data. The hihgest category (4) is mostly correctly classified, except that two instances from class 3 are incorrectly classified to class 4. Classes 3 and 1 get a little bit more mixed with class 1, and even half of all observations belonging to class 1 are incorrectly classified as class 2. However, the results seem fairly good given that the categorization boundaries were quite arbitrary (the distribution of original response variable crime may not support the categorization into four even categories). The model seems to handle the order of the categories pretty well, since no observation is classified more than one class away from the correct one.
+The test results seem to follow the results of the biplot from training data. The hihgest category (4) is perfectly classified. Classes 3 and 1 get a little bit more mixed with class 2, and even half of all observations belonging to class 2 are incorrectly classified as either class 1 or 3. However, the results seem fairly good given that the categorization boundaries were quite arbitrary (the distribution of original response variable crime may not support the categorization into four even categories). The model seems to handle the order of the categories pretty well, since only one observation belonging to class 1 is classified more than one class away from the correct one.
 
 I am a little bit confused what following problem statement means since I think this is what we exactly did in part 4: "Reload the Boston dataset and standardize the dataset (we did not do this in the Exercise Set, but you should scale the variables to get comparable distances)." However, here we go:
 
