@@ -41,4 +41,4 @@ tea = tea[c('breakfast', 'tea.time', 'evening', 'lunch', 'dinner', 'Tea', 'How',
 pairs.panels(tea)
 ```
 
-Unfortunately I could not install FactoMineR package due to some weird error so I could not complete the last exercise.
+Unfortunately I could not install FactoMineR package due to some weird error so I could not complete the last exercise...
