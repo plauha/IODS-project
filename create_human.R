@@ -1,8 +1,9 @@
 # Patrik Lauha
-# 24.11.2023
+# created 24.11.2023, modified 1.12.2023
 # A script for preprocessing data of Human Development Index (HDI).
 
 library(readr)
+library(tidyr)
 hd <- read_csv("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/human_development.csv")
 gii <- read_csv("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/gender_inequality.csv", na = "..")
 
@@ -24,6 +25,27 @@ gii$Labo.FM = gii$Labo.F / gii$Labo.M
 
 # merge data sets
 human = merge(gii, hd, by="Country", all=FALSE)
+
+# save data
+#write_csv(human, 'data/human.csv')
+
+summary(human)
+# Data contains information of wellbeing and gender equality in 195 countries including for example following variables:
+#"GNI" = Gross National Income per capita
+#"Life.Exp" = Life expectancy at birth
+#"Edu.Exp" = Expected years of schooling 
+#"Mat.Mor" = Maternal mortality ratio
+#"Ado.Birth" = Adolescent birth rate
+#"Parli.F" = Percetange of female representatives in parliament
+#"Edu2.FM" = Proportion of females with at least secondary education compared to that of males
+#"Labo.FM" = Proportion of females in the labour force compared to that of males
+
+human = human[c("Country", "Edu2.FM", "Labo.FM", "Edu.Exp", "Life.Exp", "GNI", "Mat.Mor", "Ado.Birth", "Parli.F")]
+
+human = drop_na(human)
+
+drop = c('Arab States', 'Europe and Central Asia', 'East Asia and the Pacific', 'Latin America and the Caribbean', 'South Asia', 'Sub-Saharan Africa', 'World')
+human = human[!human$Country %in% drop,]
 
 # save data
 write_csv(human, 'data/human.csv')

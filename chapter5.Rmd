@@ -1,0 +1,44 @@
+# Chapter 5
+
+The analysis and results of week 5 are presented below. 
+
+```{r}
+library(readr)
+library(tidyverse)
+library(psych)
+
+human = read_csv('data/human.csv')
+human = human %>% remove_rownames %>% column_to_rownames(var="Country")
+pairs.panels(human, method = "pearson", density = TRUE)
+```
+
+Many variables seem to have skewed distributions where majority of the countries have values that indicate fairly good state of the country (such as. relatively high proportion of females to males in the labour force, high life expectancy, low maternal mortality and adolescent birth rate), but the tails of the distributions are quite long and there are some countries where the situation is significantly worse. The variables where high values indicate good state of things tend to have positive correlation with each other and negative correlation with variables where high values indicate bad state and vice versa. For example maternal mortality correlates positively with adolescent birth rate but negatively with many variables, where high values are desirable such as GNI, life expectancy, expected education years and proportion of females to males in the labour force. 
+
+
+```{r}
+pca = prcomp(human, scale =FALSE)
+summary(pca)
+biplot(pca, scale=0)
+```
+
+Two first principal components capture 100 % of the total variation. However, since the data is not normalized, the PCA analysis doesn't produce very reliable results due to very different scales of different variables. Let's repeat the analysis with normalized data: 
+
+```{r}
+pca = prcomp(human, center=TRUE, scale =TRUE)
+summary(pca)
+biplot(pca, scale=0, xlab ='General wellbeing', ylab='Gender equality', main='PCA of Countries')
+```
+
+In the fixed PCA two first principal components explain close to 70% of all variation in the data. The first principal component describes roughly the general wellbeing (based on education, life expectancy, adolescent birth rate and maternal mortality) and second principal component the equality (the proportion of females in parliament and labour force). Proportion of females in secondary education compared to that of males should thematically fit better to the equality component but is in this analysis more aligned with overall wellbeing.
+
+```{r}
+tea <- read.csv("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/tea.csv", stringsAsFactors = TRUE)
+View(tea)
+
+# select a subset of fewer variables
+tea = tea[c('breakfast', 'tea.time', 'evening', 'lunch', 'dinner', 'Tea', 'How', 'sugar', 'how', 'where', 'price', 'age', 'sex', 'SPC')]
+
+pairs.panels(tea)
+```
+
+Unfortunately I could not install FactoMineR package due to some weird error so I could not complete the last exercise.
