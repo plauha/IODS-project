@@ -43,5 +43,6 @@ output:
 ***
 
 
-(to be continued next week...)
+```{r child = "chapter6.Rmd"}
+```
 

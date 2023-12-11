@@ -1,0 +1,107 @@
+# Chapter 6
+
+The analysis and results of week 6 are presented below. I only did the first exercise and I hope that I have done what I was supposed to do. I would have preferred a clear exercise statement that directly tells what we are asked to do instead of just repeating some random codes with different data sets. But anyway, here we go...  
+
+
+```{r}
+# read and plot rat data
+library(readr)
+library(tidyverse)
+library(ggplot2)
+
+rats = read_csv('data/rats.csv')
+rats$ID = factor(rats$ID)
+rats$Group = factor(rats$Group)
+
+for(d in c(1,8,15,22,29,36,43,44,50,57,64)){
+  rats$Time[rats$Time== paste0('WD', d)] = d
+}
+rats$Time = as.numeric(rats$Time)
+
+p1 <- ggplot(rats, aes(x = Time, y = measurement, linetype = ID))
+p2 <- p1 + geom_line() + scale_linetype_manual(values = rep(1:8, times=4))
+p3 <- p2 + facet_grid(. ~ Group, labeller = label_both)
+p4 <- p3 + theme_bw() + theme(legend.position = "none")
+p5 <- p4 + theme(panel.grid.minor.y = element_blank())
+p6 <- p5 + scale_y_continuous(limits = c(min(rats$measurement), max(rats$measurement)))
+print(p6)
+```
+
+```{r}
+# Standardise the scores:
+rats <- rats %>%
+  group_by(Time) %>%
+  mutate( std_weight = (measurement - mean(measurement))/sd(measurement) ) %>%
+  ungroup()
+
+p1 <- ggplot(rats, aes(x = Time, y = std_weight, linetype = ID))
+p2 <- p1 + geom_line() + scale_linetype_manual(values = rep(1:8, times=4))
+p3 <- p2 + facet_grid(. ~ Group, labeller = label_both)
+p4 <- p3 + theme_bw() + theme(legend.position = "none")
+p5 <- p4 + theme(panel.grid.minor.y = element_blank())
+p6 <- p5 + scale_y_continuous(name = "standardized weight")
+print(p6)
+```
+
+```{r}
+p1 <- ggplot(rats, aes(x = factor(Time), y = measurement, fill = Group))
+p2 <- p1 + geom_boxplot(position = position_dodge(width = 0.9))
+p3 <- p2 + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+p4 <- p3 + theme(legend.position = c(0.8,0.8))
+p5 <- p4 + scale_x_discrete(name = "Time")
+p5
+```
+
+
+All figures show that the rats in different treatment groups differ a lot from each other. Especially rats in group 1 were much smaller than other rats to begin with. All rats seem to have gained weight during the study.
+
+
+```{r}
+rats2 <- rats %>%
+  filter(Time > 1) %>%
+  group_by(Group, ID) %>%
+  summarise( mean=mean(measurement) ) %>%
+  ungroup()
+
+p1 <- ggplot(rats2, aes(x = Group, y = mean))
+p2 <- p1 + geom_boxplot()
+p3 <- p2 + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+p4 <- p3 + stat_summary(fun.y = "mean", geom = "point", shape=23, size=4, fill = "white")
+p5 <- p4 + scale_y_continuous(name = "mean weight")
+p5
+```
+
+In the textbook example some outliers were excluded at this point of analysis but I don't think that this data set contains too weird outliers so we continue with the original data set.
+
+```{r}
+rats2a = rats2[rats2$Group!='1',]
+t.test(mean ~ Group, data = rats2a, var.equal = TRUE)
+
+rats2b = rats2[rats2$Group!='2',]
+t.test(mean ~ Group, data = rats2b, var.equal = TRUE)
+
+rats2c = rats2[rats2$Group!='3',]
+t.test(mean ~ Group, data = rats2c, var.equal = TRUE)
+
+```
+
+As above plots and t-tests demonstrate, the rats in groups 2 and 3 were significantly bigger than rats in group 1. The differences between groups 2 and 3 are not statistically significant. However, the rats in those groups have been bigger already from the start, so I don't think that this is a very meaningful or interesting result. 
+
+```{r}
+# Add the baseline from the original data as a new variable to the summary data:
+
+baseline <- rats$measurement[rats$Time==1]
+rats3 <- rats2 %>%
+  mutate(baseline)
+
+# Fit the ANCOVA model and see the results:
+
+fit <- lm(mean ~ baseline + Group, data = rats3)
+
+summary(fit)
+anova(fit)
+```
+
+When we take the initial weight of the rats into account the diet is no longer a statistically significant explanatory variable for the weight of the rats. The differences in weights are mostly due to a large size difference already before the study.
+
+I only did the first exercise.
